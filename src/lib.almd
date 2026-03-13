@@ -1,0 +1,44 @@
+// almide-grammar — single source of truth for Almide syntax
+// Import this module to access keyword groups, aliases, and precedence data
+
+import list
+
+// ─── Types ─────────────────────────────────────────────────────────
+
+type KeywordGroup = { category: String, scope: String, words: List[String] }
+type PrecLevel = { name: String, prec: Int, ops: List[String], assoc: String }
+
+// ─── Data ──────────────────────────────────────────────────────────
+
+pub fn keyword_groups() -> List[KeywordGroup] =
+  [
+    KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "do", "guard"] },
+    KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"] },
+    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "async", "strict", "deriving"] },
+    KeywordGroup { category: "value",       scope: "constant.language.almide",     words: ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"] },
+    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["try", "await", "break", "continue"] },
+    KeywordGroup { category: "other",       scope: "keyword.other.almide",         words: ["unsafe"] }
+  ]
+
+pub fn keyword_aliases() -> List[(String, String)] =
+  [("Ok", "ok"), ("Err", "err"), ("Some", "some"), ("None", "none")]
+
+pub fn precedence_table() -> List[PrecLevel] =
+  [
+    PrecLevel { name: "pipe",           prec: 1, ops: ["|>"],                              assoc: "left" },
+    PrecLevel { name: "or",             prec: 2, ops: ["or"],                              assoc: "left" },
+    PrecLevel { name: "and",            prec: 3, ops: ["and"],                             assoc: "left" },
+    PrecLevel { name: "comparison",     prec: 4, ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "left" },
+    PrecLevel { name: "range",          prec: 5, ops: ["..", "..="],                       assoc: "none" },
+    PrecLevel { name: "additive",       prec: 6, ops: ["+", "-", "++"],                    assoc: "left" },
+    PrecLevel { name: "multiplicative", prec: 7, ops: ["*", "/", "%", "^"],                assoc: "left" },
+    PrecLevel { name: "unary",          prec: 8, ops: ["-", "not"],                        assoc: "right" }
+  ]
+
+pub fn all_keywords() -> List[String] = {
+  var all: List[String] = []
+  for group in keyword_groups() {
+    all = all ++ group.words
+  }
+  list.sort(all)
+}
