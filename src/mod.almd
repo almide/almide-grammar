@@ -1,8 +1,6 @@
 // almide-grammar — single source of truth for Almide syntax
 // Import this module to access keyword groups, aliases, and precedence data
 
-import list
-
 // ─── Types ─────────────────────────────────────────────────────────
 
 type KeywordGroup = { category: String, scope: String, words: List[String] }
