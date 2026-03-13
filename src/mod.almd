@@ -33,10 +33,5 @@ pub fn precedence_table() -> List[PrecLevel] =
     PrecLevel { name: "unary",          prec: 8, ops: ["-", "not"],                        assoc: "right" }
   ]
 
-pub fn all_keywords() -> List[String] = {
-  var all: List[String] = []
-  for group in keyword_groups() {
-    all = all ++ group.words
-  }
-  list.sort(all)
-}
+pub fn all_keywords() -> List[String] =
+  keyword_groups().flat_map(fn(g) => g.words).sort()
