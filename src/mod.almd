@@ -35,3 +35,8 @@ pub fn precedence_table() -> List[PrecLevel] =
 
 pub fn all_keywords() -> List[String] =
   keyword_groups().flat_map(fn(g) => g.words).sort()
+
+pub fn textmate_pattern(scope: String, words: List[String]) -> String = {
+  let pat = r"\\b(" ++ words.join("|") ++ r")\\b"
+  "  {\"name\": \"${scope}\", \"match\": \"${pat}\"}"
+}
