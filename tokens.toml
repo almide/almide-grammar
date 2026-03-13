@@ -1,0 +1,36 @@
+# grammar/tokens.toml — Single source of truth for Almide tokens
+# Used by build.rs to generate:
+#   - src/generated/token_table.rs (lexer keyword map, TokenType variants)
+#   - tree-sitter keyword list
+#   - TextMate grammar scopes
+
+[keywords]
+control     = ["if", "then", "else", "match", "for", "in", "while", "do", "guard"]
+declaration = ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"]
+modifier    = ["pub", "local", "mod", "effect", "async", "strict", "deriving"]
+value       = ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"]
+flow        = ["try", "await", "break", "continue"]
+other       = ["unsafe"]
+
+# Case-insensitive aliases: these map to the same TokenType as their lowercase form
+[keyword_aliases]
+Ok   = "ok"
+Err  = "err"
+Some = "some"
+None = "none"
+
+[operators]
+arithmetic = ["+", "-", "*", "/", "%", "^"]
+comparison = ["==", "!=", "<", ">", "<=", ">="]
+assignment = ["="]
+logical    = ["!", "&&", "||"]
+other      = ["++", "|>", "..", "..=", "...", "=>", "->", "|"]
+
+[delimiters]
+open      = ["(", "[", "{"]
+close     = [")", "]", "}"]
+separator = [",", ":", ";", "."]
+
+[special]
+annotation = ["@"]
+wildcard   = ["_"]

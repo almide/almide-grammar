@@ -1,0 +1,52 @@
+# grammar/precedence.toml — Operator precedence table (lowest to highest)
+# Used by build.rs to generate:
+#   - tree-sitter prec.left() / prec.right() settings
+#   - Validation against hand-written parser
+
+[[level]]
+name = "pipe"
+precedence = 1
+operators = ["|>"]
+associativity = "left"
+
+[[level]]
+name = "or"
+precedence = 2
+operators = ["or"]
+associativity = "left"
+
+[[level]]
+name = "and"
+precedence = 3
+operators = ["and"]
+associativity = "left"
+
+[[level]]
+name = "comparison"
+precedence = 4
+operators = ["==", "!=", "<", ">", "<=", ">="]
+associativity = "left"
+
+[[level]]
+name = "range"
+precedence = 5
+operators = ["..", "..="]
+associativity = "none"
+
+[[level]]
+name = "additive"
+precedence = 6
+operators = ["+", "-", "++"]
+associativity = "left"
+
+[[level]]
+name = "multiplicative"
+precedence = 7
+operators = ["*", "/", "%", "^"]
+associativity = "left"
+
+[[level]]
+name = "unary"
+precedence = 8
+operators = ["-", "not"]
+associativity = "right"
