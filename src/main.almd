@@ -1,162 +1,87 @@
-module almide_grammar
-
-import fs
 import list
 import string
-import map
 
-// ─── Data ──────────────────────────────────────────────────────────
+// ─── Grammar Data ──────────────────────────────────────────────────
 
-// Keyword categories → keyword lists
-fn keyword_table() -> Map[String, List[String]] {
-  let m = map.from_list([
-    ("control",     ["if", "then", "else", "match", "for", "in", "while", "do", "guard"]),
-    ("declaration", ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"]),
-    ("modifier",    ["pub", "local", "mod", "effect", "async", "strict", "deriving"]),
-    ("value",       ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"]),
-    ("flow",        ["try", "await", "break", "continue"]),
-    ("other",       ["unsafe"])
-  ])
-  m
-}
+type KeywordGroup = { category: String, scope: String, words: List[String] }
+type PrecLevel = { name: String, prec: Int, ops: List[String], assoc: String }
 
-// Case aliases: Ok → ok, Err → err, etc.
-fn keyword_aliases() -> List[(String, String)] {
-  [("Ok", "ok"), ("Err", "err"), ("Some", "some"), ("None", "none")]
-}
-
-// All keywords as a flat sorted list
-fn all_keywords() -> List[String] {
-  let table = keyword_table()
-  var result = list.new()
-  for category in map.keys(table) {
-    let words = map.get(table, category)
-    match words {
-      some(ws) -> {
-        for w in ws {
-          var result = result ++ [w]
-        }
-      }
-      none -> {}
-    }
-  }
-  list.sort(result)
-}
-
-// Precedence levels (lowest to highest)
-type PrecLevel = {
-  name: String,
-  precedence: Int,
-  operators: List[String],
-  associativity: String
-}
-
-fn precedence_table() -> List[PrecLevel] {
+fn keyword_groups() -> List[KeywordGroup] =
   [
-    PrecLevel { name: "pipe",           precedence: 1, operators: ["|>"],                          associativity: "left" },
-    PrecLevel { name: "or",             precedence: 2, operators: ["or"],                          associativity: "left" },
-    PrecLevel { name: "and",            precedence: 3, operators: ["and"],                         associativity: "left" },
-    PrecLevel { name: "comparison",     precedence: 4, operators: ["==", "!=", "<", ">", "<=", ">="], associativity: "left" },
-    PrecLevel { name: "range",          precedence: 5, operators: ["..", "..="],                   associativity: "none" },
-    PrecLevel { name: "additive",       precedence: 6, operators: ["+", "-", "++"],                associativity: "left" },
-    PrecLevel { name: "multiplicative", precedence: 7, operators: ["*", "/", "%", "^"],            associativity: "left" },
-    PrecLevel { name: "unary",          precedence: 8, operators: ["-", "not"],                    associativity: "right" }
+    KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "do", "guard"] },
+    KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"] },
+    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "async", "strict", "deriving"] },
+    KeywordGroup { category: "value",       scope: "constant.language.almide",     words: ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"] },
+    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["try", "await", "break", "continue"] },
+    KeywordGroup { category: "other",       scope: "keyword.other.almide",         words: ["unsafe"] }
   ]
-}
 
-// ─── TextMate scope mapping ────────────────────────────────────────
+fn keyword_aliases() -> List[(String, String)] =
+  [("Ok", "ok"), ("Err", "err"), ("Some", "some"), ("None", "none")]
 
-fn textmate_scope(category: String) -> String {
-  match category {
-    "control"     -> "keyword.control.almide"
-    "declaration" -> "keyword.declaration.almide"
-    "modifier"    -> "storage.modifier.almide"
-    "value"       -> "constant.language.almide"
-    "flow"        -> "keyword.control.flow.almide"
-    _             -> "keyword.other.almide"
-  }
-}
+fn precedence_table() -> List[PrecLevel] =
+  [
+    PrecLevel { name: "pipe",           prec: 1, ops: ["|>"],                              assoc: "left" },
+    PrecLevel { name: "or",             prec: 2, ops: ["or"],                              assoc: "left" },
+    PrecLevel { name: "and",            prec: 3, ops: ["and"],                             assoc: "left" },
+    PrecLevel { name: "comparison",     prec: 4, ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "left" },
+    PrecLevel { name: "range",          prec: 5, ops: ["..", "..="],                       assoc: "none" },
+    PrecLevel { name: "additive",       prec: 6, ops: ["+", "-", "++"],                    assoc: "left" },
+    PrecLevel { name: "multiplicative", prec: 7, ops: ["*", "/", "%", "^"],                assoc: "left" },
+    PrecLevel { name: "unary",          prec: 8, ops: ["-", "not"],                        assoc: "right" }
+  ]
 
 // ─── Generators ────────────────────────────────────────────────────
 
-// Generate tree-sitter keyword rules
-fn gen_tree_sitter_keywords() -> String {
-  let table = keyword_table()
-  var out = "// AUTO-GENERATED from almide-grammar — DO NOT EDIT\n\n"
-  for category in map.keys(table) {
-    let words = map.get(table, category)
-    match words {
-      some(ws) -> {
-        var out = out ++ "    // " ++ category ++ " keywords\n"
-        for w in ws {
-          var out = out ++ "    " ++ w ++ "_keyword: $ => '" ++ w ++ "',\n"
-        }
-        var out = out ++ "\n"
-      }
-      none -> {}
+fn gen_tree_sitter_keywords() -> String = {
+  var out = ""
+  for group in keyword_groups() {
+    out = out ++ "    // " ++ group.category ++ "\n"
+    for w in group.words {
+      out = out ++ "    " ++ w ++ "_keyword: $ => '" ++ w ++ "',\n"
     }
+    out = out ++ "\n"
   }
   out
 }
 
-// Generate TextMate grammar patterns (JSON fragments)
-fn gen_textmate_patterns() -> String {
-  let table = keyword_table()
-  var out = "// AUTO-GENERATED from almide-grammar — DO NOT EDIT\n\n"
-  for category in map.keys(table) {
-    let words = map.get(table, category)
-    match words {
-      some(ws) -> {
-        let scope = textmate_scope(category)
-        let pattern = string.join(ws, "|")
-        var out = out ++ "{\n"
-        var out = out ++ "  \"name\": \"" ++ scope ++ "\",\n"
-        var out = out ++ "  \"match\": \"\\\\b(" ++ pattern ++ ")\\\\b\"\n"
-        var out = out ++ "},\n"
-      }
-      none -> {}
-    }
+fn gen_textmate_patterns() -> String = {
+  var out = ""
+  for group in keyword_groups() {
+    let pattern = string.join(group.words, "|")
+    out = out ++ "{\"name\":\"" ++ group.scope ++ "\",\"match\":\"\\\\b(" ++ pattern ++ ")\\\\b\"},\n"
   }
-  // Aliases
-  let aliases = keyword_aliases()
-  let alias_names = list.map(aliases, fn(pair) => pair.0)
-  let alias_pattern = string.join(alias_names, "|")
-  var out = out ++ "{\n"
-  var out = out ++ "  \"name\": \"constant.language.almide\",\n"
-  var out = out ++ "  \"match\": \"\\\\b(" ++ alias_pattern ++ ")\\\\b\"\n"
-  var out = out ++ "},\n"
+  let alias_names = list.map(keyword_aliases(), fn(p) => p.0)
+  out = out ++ "{\"name\":\"constant.language.almide\",\"match\":\"\\\\b(" ++ string.join(alias_names, "|") ++ ")\\\\b\"},\n"
   out
 }
 
-// Generate tree-sitter precedence reference
-fn gen_tree_sitter_precedence() -> String {
-  let levels = precedence_table()
-  var out = "// AUTO-GENERATED from almide-grammar — DO NOT EDIT\n\n"
-  for level in levels {
-    let prec_fn = match level.associativity {
-      "left"  -> "prec.left"
-      "right" -> "prec.right"
-      _       -> "prec"
+fn gen_precedence() -> String = {
+  var out = ""
+  for level in precedence_table() {
+    let f = match level.assoc {
+      "left"  => "prec.left",
+      "right" => "prec.right",
+      _       => "prec",
     }
-    let ops = string.join(level.operators, ", ")
-    var out = out ++ "// " ++ level.name ++ ": " ++ prec_fn ++ "(" ++ to_string(level.precedence) ++ ", ...)\n"
-    var out = out ++ "// operators: " ++ ops ++ "\n\n"
+    out = out ++ level.name ++ ": " ++ f ++ "(" ++ int.to_string(level.prec) ++ ")  // " ++ string.join(level.ops, ", ") ++ "\n"
   }
   out
 }
 
 // ─── Main ──────────────────────────────────────────────────────────
 
-fn main() -> Unit {
-  let keywords = all_keywords()
-  println("almide-grammar v0.1.0")
-  println("Keywords: " ++ to_string(list.length(keywords)))
-  println("Precedence levels: " ++ to_string(list.length(precedence_table())))
-  println("")
-  println("=== Tree-sitter Keywords ===")
-  println(gen_tree_sitter_keywords())
-  println("=== TextMate Patterns ===")
-  println(gen_textmate_patterns())
-  println("=== Tree-sitter Precedence ===")
-  println(gen_tree_sitter_precedence())
+fn all_keywords() -> List[String] = {
+  var all: List[String] = []
+  for group in keyword_groups() {
+    all = all ++ group.words
+  }
+  list.sort(all)
+}
+
+fn main() -> Unit = {
+  println("almide-grammar: " ++ int.to_string(list.len(all_keywords())) ++ " keywords, " ++ int.to_string(list.len(precedence_table())) ++ " precedence levels\n")
+  println("=== tree-sitter ===\n" ++ gen_tree_sitter_keywords())
+  println("=== textmate ===\n" ++ gen_textmate_patterns())
+  println("=== precedence ===\n" ++ gen_precedence())
 }
