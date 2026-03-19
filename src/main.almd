@@ -1,5 +1,4 @@
 import self as grammar
-import env
 
 // ─── Generators ────────────────────────────────────────────────────
 
@@ -86,7 +85,7 @@ fn usage() -> String =
 
 effect fn main() -> Unit = {
   let args = env.args()
-  let target = if args.len() > 1 then args.get(1) else none
+  let target = if args.len() > 0 then args.get(0) else none
 
   match target {
     some("tree-sitter") => println(gen_tree_sitter()),
