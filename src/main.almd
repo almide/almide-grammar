@@ -98,8 +98,8 @@ effect fn main() -> Unit = {
 
 // ─── Tests ─────────────────────────────────────────────────────────
 
-test "keyword count is 41" {
-  assert_eq(grammar.all_keywords().len(), 41)
+test "keyword count is 42" {
+  assert_eq(grammar.all_keywords().len(), 42)
 }
 
 test "all groups have scopes" {
