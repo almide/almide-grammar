@@ -28,15 +28,15 @@ pub fn precedence_table() -> List[PrecLevel] =
     PrecLevel { name: "and",            prec: 3, ops: ["and"],                             assoc: "left" },
     PrecLevel { name: "comparison",     prec: 4, ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "left" },
     PrecLevel { name: "range",          prec: 5, ops: ["..", "..="],                       assoc: "none" },
-    PrecLevel { name: "additive",       prec: 6, ops: ["+", "-", "++"],                    assoc: "left" },
+    PrecLevel { name: "additive",       prec: 6, ops: ["+", "-"],                           assoc: "left" },
     PrecLevel { name: "multiplicative", prec: 7, ops: ["*", "/", "%", "^"],                assoc: "left" },
     PrecLevel { name: "unary",          prec: 8, ops: ["-", "not"],                        assoc: "right" }
   ]
 
 pub fn all_keywords() -> List[String] =
-  keyword_groups().flat_map(fn(g) => g.words).sort()
+  keyword_groups().flat_map((g) => g.words).sort()
 
 pub fn textmate_pattern(scope: String, words: List[String]) -> String = {
-  let pat = r"\\b(" ++ words.join("|") ++ r")\\b"
+  let pat = r"\\b(" + words.join("|") + r")\\b"
   "  {\"name\": \"${scope}\", \"match\": \"${pat}\"}"
 }
