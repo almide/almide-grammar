@@ -12,10 +12,9 @@ pub fn keyword_groups() -> List[KeywordGroup] =
   [
     KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "do", "guard", "fan"] },
     KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"] },
-    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "async", "strict", "deriving"] },
+    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "strict"] },
     KeywordGroup { category: "value",       scope: "constant.language.almide",     words: ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"] },
-    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["try", "await", "break", "continue"] },
-    KeywordGroup { category: "other",       scope: "keyword.other.almide",         words: ["unsafe"] }
+    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["break", "continue"] }
   ]
 
 pub fn keyword_aliases() -> List[(String, String)] =
