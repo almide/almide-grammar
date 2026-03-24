@@ -5,7 +5,7 @@
 #   - TextMate grammar scopes
 
 [keywords]
-control     = ["if", "then", "else", "match", "for", "in", "while", "do", "guard"]
+control     = ["if", "then", "else", "match", "for", "in", "while", "guard"]
 declaration = ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"]
 modifier    = ["pub", "local", "mod", "effect", "async", "strict", "deriving"]
 value       = ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"]
