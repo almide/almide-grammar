@@ -6,11 +6,10 @@
 
 [keywords]
 control     = ["if", "then", "else", "match", "for", "in", "while", "guard"]
-declaration = ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"]
-modifier    = ["pub", "local", "mod", "effect", "async", "strict", "deriving"]
+declaration = ["fn", "type", "protocol", "impl", "let", "var", "test", "import", "module", "newtype"]
+modifier    = ["pub", "local", "mod", "effect", "strict"]
 value       = ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"]
-flow        = ["try", "await", "break", "continue"]
-other       = ["unsafe"]
+flow        = ["break", "continue", "fan"]
 
 # Case-insensitive aliases: these map to the same TokenType as their lowercase form
 [keyword_aliases]
