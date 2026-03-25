@@ -1,3 +1,4 @@
+import env
 import self as grammar
 
 // ─── Generators ────────────────────────────────────────────────────
@@ -83,9 +84,9 @@ fn usage() -> String =
 
 // ─── Main ──────────────────────────────────────────────────────────
 
-effect fn main() -> Unit = {
+effect fn main() -> Result[Unit, String] = {
   let args = env.args()
-  let target = if args.len() > 0 then args.get(0) else none
+  let target = list.get(args, 1)
 
   match target {
     some("tree-sitter") => println(gen_tree_sitter()),
@@ -94,27 +95,5 @@ effect fn main() -> Unit = {
     some("info")        => println(gen_info()),
     _                   => println(usage()),
   }
-}
-
-// ─── Tests ─────────────────────────────────────────────────────────
-
-test "keyword count is 37" {
-  assert_eq(grammar.all_keywords().len(), 37)
-}
-
-test "all groups have scopes" {
-  for group in grammar.keyword_groups() {
-    assert_eq(group.scope.contains("almide"), true)
-  }
-}
-
-test "precedence table has 8 levels" {
-  assert_eq(grammar.precedence_table().len(), 8)
-}
-
-test "aliases point to valid keywords" {
-  let kws = grammar.all_keywords()
-  for alias in grammar.keyword_aliases() {
-    assert_eq(kws.contains(alias.1), true)
-  }
+  ok(())
 }

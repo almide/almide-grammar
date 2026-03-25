@@ -10,11 +10,11 @@ type PrecLevel = { name: String, prec: Int, ops: List[String], assoc: String }
 
 pub fn keyword_groups() -> List[KeywordGroup] =
   [
-    KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "do", "guard", "fan"] },
-    KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "trait", "impl", "let", "var", "test", "import", "module", "newtype"] },
+    KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "guard"] },
+    KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "protocol", "impl", "let", "var", "test", "import", "module"] },
     KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "strict"] },
     KeywordGroup { category: "value",       scope: "constant.language.almide",     words: ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"] },
-    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["break", "continue"] }
+    KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["break", "continue", "fan"] }
   ]
 
 pub fn keyword_aliases() -> List[(String, String)] =
@@ -38,4 +38,25 @@ pub fn all_keywords() -> List[String] =
 pub fn textmate_pattern(scope: String, words: List[String]) -> String = {
   let pat = r"\\b(" + words.join("|") + r")\\b"
   "  {\"name\": \"${scope}\", \"match\": \"${pat}\"}"
+}
+
+test "keyword count is 35" {
+  assert_eq(all_keywords().len(), 35)
+}
+
+test "all groups have scopes" {
+  for group in keyword_groups() {
+    assert_eq(group.scope.contains("almide"), true)
+  }
+}
+
+test "precedence table has 8 levels" {
+  assert_eq(precedence_table().len(), 8)
+}
+
+test "aliases point to valid keywords" {
+  let kws = all_keywords()
+  for alias in keyword_aliases() {
+    assert_eq(kws.contains(alias.1), true)
+  }
 }

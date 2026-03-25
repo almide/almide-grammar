@@ -42,10 +42,10 @@ almide run almide-grammar <target>
 
 | Function | Return type | Description |
 |----------|-------------|-------------|
-| `keyword_groups()` | `List[KeywordGroup]` | 6 groups: control, declaration, modifier, value, flow, other |
+| `keyword_groups()` | `List[KeywordGroup]` | 5 groups: control, declaration, modifier, value, flow |
 | `keyword_aliases()` | `List[(String, String)]` | Case aliases: `Ok`→`ok`, `Err`→`err`, `Some`→`some`, `None`→`none` |
 | `precedence_table()` | `List[PrecLevel]` | 8 levels from pipe (1) to unary (8) |
-| `all_keywords()` | `List[String]` | All 41 keywords, sorted |
+| `all_keywords()` | `List[String]` | All 35 keywords, sorted |
 
 ## Structure
 
