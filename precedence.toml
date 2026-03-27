@@ -6,7 +6,7 @@
 [[level]]
 name = "pipe"
 precedence = 1
-operators = ["|>"]
+operators = ["|>", ">>"]
 associativity = "left"
 
 [[level]]
@@ -25,7 +25,7 @@ associativity = "left"
 name = "comparison"
 precedence = 4
 operators = ["==", "!=", "<", ">", "<=", ">="]
-associativity = "left"
+associativity = "none"
 
 [[level]]
 name = "range"
@@ -42,11 +42,17 @@ associativity = "left"
 [[level]]
 name = "multiplicative"
 precedence = 7
-operators = ["*", "/", "%", "^"]
+operators = ["*", "/", "%"]
 associativity = "left"
 
 [[level]]
-name = "unary"
+name = "power"
 precedence = 8
+operators = ["^"]
+associativity = "right"
+
+[[level]]
+name = "unary"
+precedence = 9
 operators = ["-", "not"]
 associativity = "right"
