@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  RUST_TOOLCHAIN: "1.89.0"
+
+jobs:
+  generate:
+    name: Generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.almide
+          key: ${{ runner.os }}-almide-${{ env.RUST_TOOLCHAIN }}
+          restore-keys: ${{ runner.os }}-almide-${{ env.RUST_TOOLCHAIN }}-
+      - name: Install Almide
+        run: cargo install --git https://github.com/almide/almide.git --branch develop
+      - name: Generate tree-sitter
+        run: almide run src/main.almd -- tree-sitter
+      - name: Generate textmate
+        run: almide run src/main.almd -- textmate
+      - name: Generate rust
+        run: almide run src/main.almd -- rust
