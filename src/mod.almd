@@ -12,7 +12,7 @@ pub fn keyword_groups() -> List[KeywordGroup] =
   [
     KeywordGroup { category: "control",     scope: "keyword.control.almide",      words: ["if", "then", "else", "match", "for", "in", "while", "guard"] },
     KeywordGroup { category: "declaration", scope: "keyword.declaration.almide",   words: ["fn", "type", "protocol", "let", "var", "test", "import", "module"] },
-    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "strict"] },
+    KeywordGroup { category: "modifier",    scope: "storage.modifier.almide",      words: ["pub", "local", "mod", "effect", "strict", "mut"] },
     KeywordGroup { category: "value",       scope: "constant.language.almide",     words: ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"] },
     KeywordGroup { category: "flow",        scope: "keyword.control.flow.almide",  words: ["break", "continue", "fan"] }
   ]
@@ -40,8 +40,8 @@ pub fn textmate_pattern(scope: String, words: List[String]) -> String = {
   "  {\"name\": \"${scope}\", \"match\": \"${pat}\"}"
 }
 
-test "keyword count is 34" {
-  assert_eq(all_keywords().len(), 34)
+test "keyword count is 35" {
+  assert_eq(all_keywords().len(), 35)
 }
 
 test "all groups have scopes" {
