@@ -1,31 +1,37 @@
 # grammar/precedence.toml — Operator precedence table (lowest to highest)
-# Used by build.rs to generate:
-#   - tree-sitter prec.left() / prec.right() settings
-#   - Validation against hand-written parser
-
-[[level]]
-name = "pipe"
-precedence = 1
-operators = ["|>", ">>"]
-associativity = "left"
+#
+# Descriptive mirror of the compiler's Pratt parser:
+#   crates/almide-syntax/src/parser/expressions.rs (infix_bp)
+# The executable truth is the compiler's test suite:
+#   crates/almide-syntax/src/parser/test_expr_precedence.rs
+# Consumed by the grammar generators in tree-sitter-almide / vscode-almide.
 
 [[level]]
 name = "or"
-precedence = 2
+precedence = 1
 operators = ["or"]
 associativity = "left"
 
 [[level]]
 name = "and"
-precedence = 3
+precedence = 2
 operators = ["and"]
 associativity = "left"
 
 [[level]]
 name = "comparison"
-precedence = 4
+precedence = 3
 operators = ["==", "!=", "<", ">", "<=", ">="]
-associativity = "none"
+associativity = "none"          # chained comparisons are a parse error
+
+[[level]]
+name = "pipe"
+precedence = 4
+operators = ["|>"]
+associativity = "left"
+# Asymmetric: the RHS of |> is a single postfix/compose chain (only >> nests
+# inside it). Any other binary operator after the RHS applies to the whole
+# pipe result: `xs |> f + ys` == `(xs |> f) + ys`; `xs |> f >> g` == `xs |> (f >> g)`.
 
 [[level]]
 name = "range"
@@ -36,7 +42,7 @@ associativity = "none"
 [[level]]
 name = "additive"
 precedence = 6
-operators = ["+", "-", "++"]
+operators = ["+", "-"]
 associativity = "left"
 
 [[level]]
@@ -48,11 +54,25 @@ associativity = "left"
 [[level]]
 name = "power"
 precedence = 8
-operators = ["^"]
+operators = ["^"]               # ** is lexed as an alias for ^
 associativity = "right"
 
 [[level]]
-name = "unary"
+name = "compose"
 precedence = 9
+operators = [">>"]              # tightest binary operator
+associativity = "left"
+
+[[level]]
+name = "unary"
+precedence = 10
 operators = ["-", "not"]
 associativity = "right"
+
+[[level]]
+name = "postfix"
+precedence = 11
+operators = ["()", "[]", ".", "!", "?", "?.", "??"]
+associativity = "left"
+# `x ?? fallback` takes only a unary expression as fallback:
+# `x ?? 0 + 1` == `(x ?? 0) + 1`.

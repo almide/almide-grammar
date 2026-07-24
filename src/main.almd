@@ -86,7 +86,7 @@ fn usage() -> String =
 
 effect fn main() -> Result[Unit, String] = {
   let args = env.args()
-  let target = list.get(args, 1)
+  let target = list.get(args, 0)
 
   match target {
     some("tree-sitter") => println(gen_tree_sitter()),

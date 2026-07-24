@@ -1,5 +1,8 @@
 // almide-grammar — single source of truth for Almide syntax
 // Import this module to access keyword groups, aliases, and precedence data
+//
+// Descriptive mirror of the compiler (crates/almide-syntax). The executable
+// truth for precedence is crates/almide-syntax/src/parser/test_expr_precedence.rs.
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -20,16 +23,24 @@ pub fn keyword_groups() -> List[KeywordGroup] =
 pub fn keyword_aliases() -> List[(String, String)] =
   [("Ok", "ok"), ("Err", "err"), ("Some", "some"), ("None", "none")]
 
+// Lowest to highest binding. Mirrors infix_bp in the compiler's Pratt parser.
+// Two subtleties a flat table cannot express:
+//   - `|>` is asymmetric: its RHS is a single postfix/compose chain, so only
+//     `>>` nests inside it — `xs |> f + ys` == `(xs |> f) + ys`.
+//   - `x ?? fallback` takes only a unary expression as fallback.
 pub fn precedence_table() -> List[PrecLevel] =
   [
-    PrecLevel { name: "pipe",           prec: 1, ops: ["|>"],                              assoc: "left" },
-    PrecLevel { name: "or",             prec: 2, ops: ["or"],                              assoc: "left" },
-    PrecLevel { name: "and",            prec: 3, ops: ["and"],                             assoc: "left" },
-    PrecLevel { name: "comparison",     prec: 4, ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "left" },
-    PrecLevel { name: "range",          prec: 5, ops: ["..", "..="],                       assoc: "none" },
-    PrecLevel { name: "additive",       prec: 6, ops: ["+", "-"],                           assoc: "left" },
-    PrecLevel { name: "multiplicative", prec: 7, ops: ["*", "/", "%", "^"],                assoc: "left" },
-    PrecLevel { name: "unary",          prec: 8, ops: ["-", "not"],                        assoc: "right" }
+    PrecLevel { name: "or",             prec: 1,  ops: ["or"],                              assoc: "left" },
+    PrecLevel { name: "and",            prec: 2,  ops: ["and"],                             assoc: "left" },
+    PrecLevel { name: "comparison",     prec: 3,  ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "none" },
+    PrecLevel { name: "pipe",           prec: 4,  ops: ["|>"],                              assoc: "left" },
+    PrecLevel { name: "range",          prec: 5,  ops: ["..", "..="],                       assoc: "none" },
+    PrecLevel { name: "additive",       prec: 6,  ops: ["+", "-"],                           assoc: "left" },
+    PrecLevel { name: "multiplicative", prec: 7,  ops: ["*", "/", "%"],                      assoc: "left" },
+    PrecLevel { name: "power",          prec: 8,  ops: ["^"],                                assoc: "right" },
+    PrecLevel { name: "compose",        prec: 9,  ops: [">>"],                               assoc: "left" },
+    PrecLevel { name: "unary",          prec: 10, ops: ["-", "not"],                         assoc: "right" },
+    PrecLevel { name: "postfix",        prec: 11, ops: ["()", "[]", ".", "!", "?", "?.", "??"], assoc: "left" }
   ]
 
 pub fn all_keywords() -> List[String] =
@@ -50,8 +61,22 @@ test "all groups have scopes" {
   }
 }
 
-test "precedence table has 8 levels" {
-  assert_eq(precedence_table().len(), 8)
+test "precedence table has 11 levels" {
+  assert_eq(precedence_table().len(), 11)
+}
+
+test "precedence is strictly increasing" {
+  let precs = precedence_table().map((l) => l.prec)
+  assert_eq(precs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+}
+
+test "compose binds tighter than power, pipe looser than range" {
+  let by_name = precedence_table().map((l) => (l.name, l.prec))
+  let get = (name: String) =>
+    by_name |> list.find((e) => e.0 == name) |> option.map((e) => e.1) ?? 0
+  assert_eq(get("compose") > get("power"), true);
+  assert_eq(get("pipe") < get("range"), true);
+  assert_eq(get("comparison") < get("pipe"), true)
 }
 
 test "aliases point to valid keywords" {
