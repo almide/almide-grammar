@@ -25,13 +25,16 @@ arithmetic = ["+", "-", "*", "/", "%", "^"]   # ** is lexed as an alias for ^ (p
 comparison = ["==", "!=", "<", ">", "<=", ">="]
 assignment = ["="]
 pipeline   = ["|>", ">>"]
-range      = ["..", "..="]
+range      = ["..<", "..."]                   # Swift-style (#966): ..< exclusive, ... inclusive
 postfix    = ["!", "?", "?.", "??"]           # unwrap / to-Option / optional chain / fallback
-other      = ["=>", "->", "|", "..."]         # arrows, variant separator, record spread
+other      = ["=>", "->", "|", "...", ".."]   # arrows, variant separator, spread (prefix `...`), record-rest (`{ x, .. }`)
+# `...` is BOTH the inclusive range (infix) and the record/list spread (prefix
+# inside a literal) — position disambiguates, never the token.
 
 # Lexed ONLY so the parser can emit migration hints — not valid Almide:
-#   && → and, || → or, ++ → + (concat), prefix ! → not
-rejected   = ["&&", "||", "++"]
+#   && → and, || → or, ++ → + (concat), prefix ! → not,
+#   infix .. → ..< and ..= → ... (E031 fix-it; `..` stays valid as record-rest)
+rejected   = ["&&", "||", "++", "..="]
 
 [delimiters]
 open      = ["(", "[", "{"]

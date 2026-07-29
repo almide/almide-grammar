@@ -34,7 +34,7 @@ pub fn precedence_table() -> List[PrecLevel] =
     PrecLevel { name: "and",            prec: 2,  ops: ["and"],                             assoc: "left" },
     PrecLevel { name: "comparison",     prec: 3,  ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "none" },
     PrecLevel { name: "pipe",           prec: 4,  ops: ["|>"],                              assoc: "left" },
-    PrecLevel { name: "range",          prec: 5,  ops: ["..", "..="],                       assoc: "none" },
+    PrecLevel { name: "range",          prec: 5,  ops: ["..<", "..."],                      assoc: "none" },
     PrecLevel { name: "additive",       prec: 6,  ops: ["+", "-"],                           assoc: "left" },
     PrecLevel { name: "multiplicative", prec: 7,  ops: ["*", "/", "%"],                      assoc: "left" },
     PrecLevel { name: "power",          prec: 8,  ops: ["^"],                                assoc: "right" },
