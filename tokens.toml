@@ -9,7 +9,7 @@
 [keywords]
 control     = ["if", "then", "else", "match", "for", "in", "while", "guard"]
 declaration = ["fn", "type", "protocol", "let", "var", "test", "import", "module"]
-modifier    = ["pub", "local", "mod", "effect", "strict", "mut"]
+modifier    = ["pub", "local", "mod", "effect", "mut"]
 value       = ["true", "false", "none", "some", "ok", "err", "todo", "not", "and", "or"]
 flow        = ["break", "continue", "fan"]
 
@@ -21,7 +21,7 @@ Some = "some"
 None = "none"
 
 [operators]
-arithmetic = ["+", "-", "*", "/", "%", "^"]   # ** is lexed as an alias for ^ (power)
+arithmetic = ["+", "-", "*", "/", "%", "^", "**"]   # ** is an alias for ^ (power)
 comparison = ["==", "!=", "<", ">", "<=", ">="]
 assignment = ["="]
 pipeline   = ["|>", ">>"]
