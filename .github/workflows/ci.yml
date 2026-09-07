@@ -6,28 +6,27 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  RUST_TOOLCHAIN: "1.89.0"
-
 jobs:
   generate:
     name: Generate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.almide
-          key: ${{ runner.os }}-almide-${{ env.RUST_TOOLCHAIN }}
-          restore-keys: ${{ runner.os }}-almide-${{ env.RUST_TOOLCHAIN }}-
+      # Prebuilt binary from the latest almide release. `cargo install --git`
+      # stopped working once the compiler repo became a multi-binary workspace
+      # ("multiple packages with binaries found"), and building from source
+      # took most of the job anyway.
       - name: Install Almide
-        run: cargo install --git https://github.com/almide/almide.git --branch develop
+        run: |
+          set -euo pipefail
+          asset=almide-linux-x86_64
+          curl -fsSL -o "$asset.tar.gz" \
+            "https://github.com/almide/almide/releases/latest/download/$asset.tar.gz"
+          tar -xzf "$asset.tar.gz"
+          sudo install -m 755 "$asset/almide" /usr/local/bin/almide
+          almide --version
+      - name: Test
+        run: almide test src/
       - name: Generate tree-sitter
         run: almide run src/main.almd -- tree-sitter
       - name: Generate textmate
