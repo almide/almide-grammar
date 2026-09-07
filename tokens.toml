@@ -27,14 +27,23 @@ assignment = ["="]
 pipeline   = ["|>", ">>"]
 range      = ["..<", "..."]                   # Swift-style (#966): ..< exclusive, ... inclusive
 postfix    = ["!", "?", "?.", "??"]           # unwrap / to-Option / optional chain / fallback
-other      = ["=>", "->", "|", "...", ".."]   # arrows, variant separator, spread (prefix `...`), record-rest (`{ x, .. }`)
+other      = ["=>", "->", "|", "...", ".."]   # arrows, variant separator, spread (prefix `...`), rest in patterns (`..`, see [patterns])
 # `...` is BOTH the inclusive range (infix) and the record/list spread (prefix
 # inside a literal) — position disambiguates, never the token.
 
 # Lexed ONLY so the parser can emit migration hints — not valid Almide:
 #   && → and, || → or, ++ → + (concat), prefix ! → not,
-#   infix .. → ..< and ..= → ... (E031 fix-it; `..` stays valid as record-rest)
+#   infix .. → ..< and ..= → ... (E031 fix-it; `..` stays valid as pattern rest)
 rejected   = ["&&", "||", "++", "..="]
+
+# Pattern-position readings of tokens listed above (parser-level, 0.62.0). The
+# lexer token is the same; only the position gives it this meaning.
+[patterns]
+record_rest = [".."]   # `{ x, .. }` — the remaining fields are ignored
+list_rest   = [".."]   # `[h, ..t]` binds the tail, `[a, b, ..]` ignores it, `[..all]`;
+                       # the rest slot is LAST-only and `[h, ..t]` requires len >= 1
+as_binder   = ["@"]    # `c @ Circle(r)` — `c` binds the whole value, `r` the payload;
+                       # also `all @ [a, ..t]`, `whole @ some(v)`
 
 [delimiters]
 open      = ["(", "[", "{"]
@@ -42,5 +51,6 @@ close     = [")", "]", "}"]
 separator = [",", ":", ";", "."]
 
 [special]
-annotation = ["@"]
+annotation = ["@"]     # `@intrinsic("...")`, `@deprecated` — prefix, nothing before it;
+                       # `identifier @ pattern` is the as-binder ([patterns].as_binder)
 wildcard   = ["_"]
