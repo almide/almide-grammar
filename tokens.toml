@@ -26,7 +26,8 @@ comparison = ["==", "!=", "<", ">", "<=", ">="]
 assignment = ["="]
 pipeline   = ["|>", ">>"]
 range      = ["..<", "..."]                   # Swift-style (#966): ..< exclusive, ... inclusive
-postfix    = ["!", "?", "?.", "??"]           # unwrap / to-Option / optional chain / fallback
+coalesce   = ["??"]                           # fallback: a right-assoc infix level since dialect 16 (almide/almide#4531)
+postfix    = ["!", "?", "?."]                 # unwrap / to-Option / optional chain
 other      = ["=>", "->", "|", "...", ".."]   # arrows, variant separator, spread (prefix `...`), rest in patterns (`..`, see [patterns])
 # `...` is BOTH the inclusive range (infix) and the record/list spread (prefix
 # inside a literal) — position disambiguates, never the token.

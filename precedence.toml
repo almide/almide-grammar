@@ -25,8 +25,18 @@ operators = ["==", "!=", "<", ">", "<=", ">="]
 associativity = "none"          # chained comparisons are a parse error
 
 [[level]]
-name = "pipe"
+name = "coalesce"
 precedence = 4
+operators = ["??"]
+associativity = "right"
+# Since dialect 16 (almide/almide#4531) `??` is an infix level, not a postfix:
+# `x ?? 0 + 1` == `x ?? (0 + 1)`, `s + b ?? 0` == `(s + b) ?? 0`,
+# `xs |> f ?? d` == `(xs |> f) ?? d`, `x ?? 0 == n` == `(x ?? 0) == n`.
+# (Before dialect 16 it bound tighter than every binary operator.)
+
+[[level]]
+name = "pipe"
+precedence = 5
 operators = ["|>"]
 associativity = "left"
 # Asymmetric: the RHS of |> is a single postfix/compose chain (only >> nests
@@ -35,44 +45,42 @@ associativity = "left"
 
 [[level]]
 name = "range"
-precedence = 5
+precedence = 6
 operators = ["..<", "..."]
 associativity = "none"
 
 [[level]]
 name = "additive"
-precedence = 6
+precedence = 7
 operators = ["+", "-"]
 associativity = "left"
 
 [[level]]
 name = "multiplicative"
-precedence = 7
+precedence = 8
 operators = ["*", "/", "%"]
 associativity = "left"
 
 [[level]]
 name = "power"
-precedence = 8
+precedence = 9
 operators = ["^"]               # ** is lexed as an alias for ^
 associativity = "right"
 
 [[level]]
 name = "compose"
-precedence = 9
+precedence = 10
 operators = [">>"]              # tightest binary operator
 associativity = "left"
 
 [[level]]
 name = "unary"
-precedence = 10
+precedence = 11
 operators = ["-", "not"]
 associativity = "right"
 
 [[level]]
 name = "postfix"
-precedence = 11
-operators = ["()", "[]", ".", "!", "?", "?.", "??"]
+precedence = 12
+operators = ["()", "[]", ".", "!", "?", "?."]
 associativity = "left"
-# `x ?? fallback` takes only a unary expression as fallback:
-# `x ?? 0 + 1` == `(x ?? 0) + 1`.
