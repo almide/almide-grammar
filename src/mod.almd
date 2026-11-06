@@ -23,24 +23,26 @@ pub fn keyword_groups() -> List[KeywordGroup] =
 pub fn keyword_aliases() -> List[(String, String)] =
   [("Ok", "ok"), ("Err", "err"), ("Some", "some"), ("None", "none")]
 
-// Lowest to highest binding. Mirrors infix_bp in the compiler's Pratt parser.
-// Two subtleties a flat table cannot express:
+// Lowest to highest binding. Mirrors infix_bp in the compiler's Pratt parser:
+// since dialect 16 (almide/almide#4531) every binary operator follows one
+// widely used precedence order, and `??` is a right-associative infix level
+// between the comparisons and `|>`. One subtlety a flat table cannot express:
 //   - `|>` is asymmetric: its RHS is a single postfix/compose chain, so only
 //     `>>` nests inside it — `xs |> f + ys` == `(xs |> f) + ys`.
-//   - `x ?? fallback` takes only a unary expression as fallback.
 pub fn precedence_table() -> List[PrecLevel] =
   [
     PrecLevel { name: "or",             prec: 1,  ops: ["or"],                              assoc: "left" },
     PrecLevel { name: "and",            prec: 2,  ops: ["and"],                             assoc: "left" },
     PrecLevel { name: "comparison",     prec: 3,  ops: ["==", "!=", "<", ">", "<=", ">="], assoc: "none" },
-    PrecLevel { name: "pipe",           prec: 4,  ops: ["|>"],                              assoc: "left" },
-    PrecLevel { name: "range",          prec: 5,  ops: ["..<", "..."],                      assoc: "none" },
-    PrecLevel { name: "additive",       prec: 6,  ops: ["+", "-"],                           assoc: "left" },
-    PrecLevel { name: "multiplicative", prec: 7,  ops: ["*", "/", "%"],                      assoc: "left" },
-    PrecLevel { name: "power",          prec: 8,  ops: ["^"],                                assoc: "right" },
-    PrecLevel { name: "compose",        prec: 9,  ops: [">>"],                               assoc: "left" },
-    PrecLevel { name: "unary",          prec: 10, ops: ["-", "not"],                         assoc: "right" },
-    PrecLevel { name: "postfix",        prec: 11, ops: ["()", "[]", ".", "!", "?", "?.", "??"], assoc: "left" }
+    PrecLevel { name: "coalesce",       prec: 4,  ops: ["??"],                              assoc: "right" },
+    PrecLevel { name: "pipe",           prec: 5,  ops: ["|>"],                              assoc: "left" },
+    PrecLevel { name: "range",          prec: 6,  ops: ["..<", "..."],                      assoc: "none" },
+    PrecLevel { name: "additive",       prec: 7,  ops: ["+", "-"],                           assoc: "left" },
+    PrecLevel { name: "multiplicative", prec: 8,  ops: ["*", "/", "%"],                      assoc: "left" },
+    PrecLevel { name: "power",          prec: 9,  ops: ["^"],                                assoc: "right" },
+    PrecLevel { name: "compose",        prec: 10, ops: [">>"],                               assoc: "left" },
+    PrecLevel { name: "unary",          prec: 11, ops: ["-", "not"],                         assoc: "right" },
+    PrecLevel { name: "postfix",        prec: 12, ops: ["()", "[]", ".", "!", "?", "?."],    assoc: "left" }
   ]
 
 pub fn all_keywords() -> List[String] =
@@ -61,13 +63,13 @@ test "all groups have scopes" {
   }
 }
 
-test "precedence table has 11 levels" {
-  assert_eq(precedence_table().len(), 11)
+test "precedence table has 12 levels" {
+  assert_eq(precedence_table().len(), 12)
 }
 
 test "precedence is strictly increasing" {
   let precs = precedence_table().map((l) => l.prec)
-  assert_eq(precs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  assert_eq(precs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 }
 
 test "compose binds tighter than power, pipe looser than range" {
@@ -76,7 +78,9 @@ test "compose binds tighter than power, pipe looser than range" {
     by_name |> list.find((e) => e.0 == name) |> option.map((e) => e.1) ?? 0
   assert_eq(get("compose") > get("power"), true);
   assert_eq(get("pipe") < get("range"), true);
-  assert_eq(get("comparison") < get("pipe"), true)
+  assert_eq(get("comparison") < get("pipe"), true);
+  assert_eq(get("comparison") < get("coalesce"), true);
+  assert_eq(get("coalesce") < get("pipe"), true)
 }
 
 test "aliases point to valid keywords" {

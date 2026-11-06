@@ -48,12 +48,14 @@ almide run almide-grammar <target>
 |----------|-------------|-------------|
 | `keyword_groups()` | `List[KeywordGroup]` | 5 groups: control, declaration, modifier, value, flow |
 | `keyword_aliases()` | `List[(String, String)]` | Case aliases: `Ok`→`ok`, `Err`→`err`, `Some`→`some`, `None`→`none` |
-| `precedence_table()` | `List[PrecLevel]` | 11 levels from `or` (1) to postfix (11) |
+| `precedence_table()` | `List[PrecLevel]` | 12 levels from `or` (1) to postfix (12) |
 | `all_keywords()` | `List[String]` | All 35 keywords, sorted |
 
-Two precedence subtleties a flat table cannot express (see `precedence.toml`):
+One precedence subtlety a flat table cannot express (see `precedence.toml`):
 `|>` is asymmetric (its RHS is a single postfix/compose chain — only `>>`
-nests inside it), and `??` takes only a unary expression as its fallback.
+nests inside it). Since dialect 16 (almide/almide#4531) `??` is a
+right-associative infix level between the comparisons and `|>`, no longer a
+postfix: `x ?? 0 + 1` is `x ?? (0 + 1)`.
 
 ## Structure
 
